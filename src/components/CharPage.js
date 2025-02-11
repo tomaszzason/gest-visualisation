@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from "react";
+import {useNavigate, useLocation } from "react-router-dom";
+
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-export default function ChartComponent({  report_date, city }) {
+const Button = ({ children, onClick }: { children: string; onClick: () => void }) => (
+  <button onClick={onClick} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+    {children}
+  </button>
+);
+
+export default function ChartComponent() {
 
   const [data, setData] = useState([]);
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  const report_date = params.get("date");
+  const city = params.get("city");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +57,9 @@ export default function ChartComponent({  report_date, city }) {
   return (
     <div className="w-full h-96 p-4 bg-white shadow-lg rounded-xl">
       <h2 className="text-xl font-semibold mb-4">Quantity Over Time</h2>
+      <p><strong>Date:</strong> {report_date}</p>
+      <p><strong>City:</strong> {city}</p>
+      <Button variant="outline" onClick={() => navigate(-1)}>Back</Button>
       {data.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={data}>
