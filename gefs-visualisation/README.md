@@ -1,3 +1,23 @@
+The frontend is built using React and Recharts for data visualization.
+
+### How to Run the Frontend
+
+1. Navigate to the frontend directory:
+   ```sh
+   cd gefs-visualisation/frontend
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Start the development server:
+   ```sh
+   npm start
+   ```
+
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
