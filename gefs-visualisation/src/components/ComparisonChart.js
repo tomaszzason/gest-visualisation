@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, data } from "react-router-dom";
+import { useNavigate, useLocation} from "react-router-dom";
 import { XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const API_URL = "http://localhost:50000/getGefs"; 
@@ -17,16 +17,16 @@ export default function ComparisonChart() {
   const params = new URLSearchParams(search);
   const date1 = params.get("date").replace(/-/g, "");
   const date2 = params.get("date2").replace(/-/g, "");
-  const tt1 = params.get("tt1")
-  const tt2 = params.get("tt2")
+  const cc1 = params.get("cc1")
+  const cc2 = params.get("cc2")
 
   const city = params.get("city");
-  const time1 = tt1.split(',')[0];
-  const time2 = tt2.split(',')[0];
+  const time1 = cc1.split(',')[0];
+  const time2 = cc2.split(',')[0];
   const dataKey1 = `${time1} (${date1})`;
   const dataKey2 = `${time2} (${date2})`;
 
-  useEffect(() => {
+  useEffect((city,dataKey1,dataKey2,time1,time2,date1,date2) => {
     const fetchData = async () => {
       try {
         const response1 = await fetch(`${API_URL}?report_date=${date1}&city=${city}`);
@@ -47,7 +47,7 @@ export default function ComparisonChart() {
           [dataKey2]: dataMap2[time]?.[time2] || null,
         }));
 
-        console.log("Prepared Data:", mergedData); // Debugging output
+        //console.log("Prepared Data:", mergedData); // Debugging output
         setChartData(mergedData);
       } catch (error) {
         console.error("Error fetching data:", error);

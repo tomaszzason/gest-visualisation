@@ -70,7 +70,7 @@ export default function ChartComponent() {
             <YAxis domain={['auto', 'auto']} />
             <Tooltip labelFormatter={(label) => new Date(label).toISOString()}/>
             <Line type="monotone" dataKey="oo" stroke="#A3f3d8" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="o6" stroke="#F3f388" strokeWidth={2} dot={true} label="06"/>
+            <Line type="monotone" dataKey="o6" stroke="#964B00" strokeWidth={2} dot={true} label="06"/>
             <Line type="monotone" dataKey="12" stroke="#8884d8" strokeWidth={2} dot={true} label="12"/>
             <Line type="monotone" dataKey="18" stroke="#888888" strokeWidth={2} dot={true} label="06"/>
           </LineChart>

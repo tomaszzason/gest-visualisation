@@ -150,39 +150,6 @@ def load_gec_files_and_read_temp(tt, xx, worksheet_inner, row, mongo_data_record
     mongo_data_record['city'] = city
     mongo_data_record[tt] = mean_temperature_celcius
 
-    #usa_ds["t2m"].plot(cmap="coolwarm")
-    #plt.show()
-
-
-#def renderPlot(usa_ds):
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-    import cartopy.feature as cfeature
-
-    # Create a figure and axis with a cartopy projection
-    fig, ax = plt.subplots(figsize=(12, 8), subplot_kw={'projection': ccrs.PlateCarree()})
-
-    # Add map features (coastlines, borders, states, etc.)
-    ax.add_feature(cfeature.COASTLINE, linewidth=1)
-    ax.add_feature(cfeature.BORDERS, linewidth=1)
-    ax.add_feature(cfeature.STATES, linewidth=0.5, linestyle=':')
-
-    # Plot the temperature data
-    usa_ds["t2m"].plot(
-        ax=ax,
-        transform=ccrs.PlateCarree(),  # Transform data to map's projection
-        cmap='coolwarm',               # Colormap for temperature
-        cbar_kwargs={'label': 'Temperature (K)'}  # Add colorbar label
-    )
-
-    # Set map extent to focus on the USA
-    ax.set_extent([-125, -66.93, 24.4, 49.38], crs=ccrs.PlateCarree())
-
-    # Add title
-    plt.title("Temperature Over USA")
-    #plt.show()
-
-
 def saveToDatabase(record, tt):
 
     if len(record) == 0:

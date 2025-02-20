@@ -16,36 +16,36 @@ export default function DateCityForm({ onSubmit, onCompare }) {
   const [date2, setDate2] = useState("");
   const [selectedCity, setCity] = useState("");
   const navigate = useNavigate();
-  const options = ["00", "06", "12", "18"];
+  const forcastCycles = ["00", "06", "12", "18"];
   const [cities, setCities] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState([]);
-  const [selectedOptions2, setSelectedOptions2] = useState([]);
+  const [selectedCycles, setSelectedCycles] = useState([]);
+  const [selectedCycles2, setSelectedCycles2] = useState([]);
 
   useEffect(() => {
     fetch(API_URL)
       .then((response) => response.json())
       .then((data) => setCities(data))
       .catch((error) => console.error("Error fetching data:", error));
-  }, ["Chicago", "New York", "Gliwice", "Dallas"]);
+  }, []);
 
   const handleSubmit = (path) => {
     if (!selectedCity || !date) {
       alert("Please enter both date and city");
       return;
     }
-    navigate(`${path}?date=${encodeURIComponent(date)}&date2=${encodeURIComponent(date2)}&tt1=${encodeURIComponent(selectedOptions.join(", "))}&tt2=${encodeURIComponent(selectedOptions2.join(", "))}&city=${encodeURIComponent(selectedCity)}`);
+    navigate(`${path}?date=${encodeURIComponent(date)}&date2=${encodeURIComponent(date2)}&cc1=${encodeURIComponent(selectedCycles.join(", "))}&cc2=${encodeURIComponent(selectedCycles2.join(", "))}&city=${encodeURIComponent(selectedCity)}`);
   };
 
   const handleCheckboxChange = (event) => {
     const value = event.target.value;
-    setSelectedOptions((prev) =>
+    setSelectedCycles((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
   };
 
   const handleCheckboxChange2 = (event) => {
     const value = event.target.value;
-    setSelectedOptions2((prev) =>
+    setSelectedCycles2((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
   };
@@ -70,12 +70,12 @@ export default function DateCityForm({ onSubmit, onCompare }) {
           onChange={(e) => setDate(e.target.value)}
           className="mt-1 p-2 w-full border rounded-md"
         />
-        {options.map((option) => (
+        {forcastCycles.map((option) => (
           <label key={option}>
             <input
               type="checkbox"
               value={option}
-              checked={selectedOptions.includes(option)}
+              checked={selectedCycles.includes(option)}
               onChange={handleCheckboxChange} />
             {option}
           </label>
@@ -91,12 +91,12 @@ export default function DateCityForm({ onSubmit, onCompare }) {
           className="mt-1 p-2 w-full border rounded-md"
         />
 
-        {options.map((option) => (
+        {forcastCycles.map((option) => (
           <label key={option}>
             <input
               type="checkbox"
               value={option}
-              checked={selectedOptions2.includes(option)}
+              checked={selectedCycles2.includes(option)}
               onChange={handleCheckboxChange2} />
             {option}
           </label>

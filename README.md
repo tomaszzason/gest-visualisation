@@ -4,5 +4,10 @@ A web application that visualizes mean temperature forecasts for selected cities
 
 ## Features
 
-- Show mean temperatures for all forecasts by city and date.
+- Show mean temperatures for all forecasts by city and date. (00, 06, 12, 18)  - corresponding to the four forecasts published each day, every six hours.
 - Compare mean temperatures by forecast and city.
+
+## TODO
+1. Automate grib processing using job
+2. New chart - compare forecasts using BarChart
+3. Heating Degree Days (HDD) calculation

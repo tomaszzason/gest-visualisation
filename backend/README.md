@@ -1,6 +1,6 @@
 ## Backend
 
-The backend is implemented using Python and FastAPI. It reads GEFS files from NOAA and stores the mean temperature for the selected city in MongoDB.
+The backend is implemented using Python and FastAPI. It reads [GEFS](https://www.ncei.noaa.gov/products/weather-climate-models/global-ensemble-forecast) files from NOAA and stores the mean temperature for the selected city in MongoDB.
 
 ### API Endpoints
 
@@ -50,3 +50,7 @@ The backend is implemented using Python and FastAPI. It reads GEFS files from NO
    ```sh
    python3 -m uvicorn gefs:app --reload --port 50000
    ```
+
+   ### Links
+
+   https://github.com/awslabs/open-data-docs/tree/main/docs/noaa/noaa-gefs-pds
