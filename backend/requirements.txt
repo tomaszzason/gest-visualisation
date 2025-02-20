@@ -1,0 +1,8 @@
+uvicorn
+xarray
+fastapi
+cartopy
+xlsxwriter
+flask
+pymongo
+cfgrib
