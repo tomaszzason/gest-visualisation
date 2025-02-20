@@ -56,7 +56,7 @@ export default function ChartComponent() {
 
   return (
     <div className="w-full h-96 p-4 bg-white shadow-lg rounded-xl">
-      <h2 className="text-xl font-semibold mb-4">Quantity Over Time</h2>
+      <h2 className="text-xl font-semibold mb-4">GEFS forecast</h2>
       <p><strong>Date:</strong> {report_date}</p>
       <p><strong>City:</strong> {city}</p>
       <Button variant="outline" onClick={() => navigate(-1)}>Back</Button>
@@ -69,10 +69,10 @@ export default function ChartComponent() {
             />
             <YAxis domain={['auto', 'auto']} />
             <Tooltip labelFormatter={(label) => new Date(label).toISOString()}/>
-            <Line type="monotone" dataKey="oo" stroke="#8884d8" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="o6" stroke="#888888" strokeWidth={2} dot={true} label="06"/>
-            <Line type="monotone" dataKey="12" stroke="#F3f388" strokeWidth={2} dot={true} label="12"/>
-            <Line type="monotone" dataKey="18" stroke="#A3f3d8" strokeWidth={2} dot={true} label="06"/>
+            <Line type="monotone" dataKey="oo" stroke="#A3f3d8" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="o6" stroke="#F3f388" strokeWidth={2} dot={true} label="06"/>
+            <Line type="monotone" dataKey="12" stroke="#8884d8" strokeWidth={2} dot={true} label="12"/>
+            <Line type="monotone" dataKey="18" stroke="#888888" strokeWidth={2} dot={true} label="06"/>
           </LineChart>
         </ResponsiveContainer>
       ) : (
