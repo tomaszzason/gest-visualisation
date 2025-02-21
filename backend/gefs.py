@@ -106,7 +106,9 @@ def load_gec_files_and_read_temp(tt, xx, worksheet_inner, row, mongo_data_record
             print("Oops!  Cannot access file .  Try again...", full_url)
             return
 
-    ds = xr.open_dataset(full_path_to_download, filter_by_keys={'typeOfLevel': 'heightAboveGround'}, engine="cfgrib")
+    #ds = xr.open_dataset(full_path_to_download, filter_by_keys={'typeOfLevel': 'heightAboveGround'}, engine="cfgrib")
+    ds = xr.open_dataset(full_path_to_download, filter_by_keys={'paramId': 167}, decode_timedelta=False, engine="cfgrib")
+    
   
     if not ds.data_vars:
         print("Empty data set!")
@@ -222,9 +224,12 @@ def getCities():
 def job():
 
     formatted_date = datetime.now().strftime("%Y%m%d")
-    for city in getCities():
+    cities = getCities()
+    print("Uruchomiona joba ", formatted_date, cities)
+    for city in cities:
         process_gefs_data(formatted_date, city)
-        print("Uruchomiona joba ", formatted_date, city)
+    
+    print("Koniec joba ", datetime.now(), city)
 
 def run_scheduler():
     """ Function to continuously run the scheduler in a background thread. """
@@ -235,7 +240,8 @@ def run_scheduler():
 
 def schedule_jobs():
     # Run the retry check every 5 minutes
-    schedule.every(1).hours.do(job)
+    schedule.every(15).minutes.do(job)
+    print("Scheduled job")
     # schedule.every().day.at("00:00").do(job)
     # schedule.every().day.at("06:00").do(job)
     # schedule.every().day.at("12:00").do(job)
