@@ -1,5 +1,6 @@
 uvicorn
 xarray
+eccodes
 fastapi
 cartopy
 xlsxwriter
