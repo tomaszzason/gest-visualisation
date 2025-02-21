@@ -8,6 +8,7 @@ A web application that visualizes mean temperature forecasts for selected cities
 - Compare mean temperatures by forecast and city.
 
 ## TODO
-1. Automate grib processing using job
-2. New chart - compare forecasts using BarChart
-3. Heating Degree Days (HDD) calculation
+1. New chart - compare forecasts using BarChart
+2. Heating Degree Days (HDD) calculation
+3. Integration with Kafka
+4. Read EPS forecast https://data.ecmwf.int/forecasts/

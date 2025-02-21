@@ -13,6 +13,9 @@ from contextlib import asynccontextmanager
 from pymongo import MongoClient
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
+import schedule # type: ignore
+import time
+import threading
 
 
 # CFS model data https://nomads.ncep.noaa.gov/pub/data/nccf/com/cfs/prod/cfs.20250114/
@@ -31,27 +34,13 @@ from starlette.responses import JSONResponse
 # https://open-meteo.com/en/docs/ecmwf-api
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("App is starting up...")
-    app.mongodb_client = MongoClient("mongodb://admin:adminpassword@localhost:27017")
-    app.database = app.mongodb_client["mydatabase"]
-    print("Connected to the MongoDB database!")
-    yield
-    print("App is shutting down...")
 
-
-app = FastAPI(lifespan=lifespan)
-
-# Allow all origins (for development)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Change this to your frontend URL in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+NOAA_GEFS_API = "https://noaa-gefs-pds.s3.amazonaws.com/gefs.";
+ATMOS = "/atmos/pgrb2ap5/"
+CC_FORECAST_CYCLES = ["00", "06", "12", "18"]
+DATABASE_NAME = "mydatabase"
+COLLECTION_NAME_GEFS = "gefs"
+COLLECTION_NAME_CITIES = "cities"
 
 def parse_datetime_from_filename(usa_ds):
     time = usa_ds["t2m"].valid_time.data
@@ -97,7 +86,7 @@ def longitude_to_360(longitude):
 
 def load_gec_files_and_read_temp(tt, xx, worksheet_inner, row, mongo_data_record, report_date, city):
 
-    url = "https://noaa-gefs-pds.s3.amazonaws.com/gefs." + report_date + "/" + tt + "/atmos/pgrb2ap5/"
+    url = NOAA_GEFS_API + report_date + "/" + tt + "/atmos/pgrb2ap5/"
     filename = "gec00.t" + tt + "z.pgrb2a.0p50.f" + xx
     folder = "/Users/Zini/Downloads/gefs/"
     directory = folder + report_date + "/" + tt
@@ -123,7 +112,7 @@ def load_gec_files_and_read_temp(tt, xx, worksheet_inner, row, mongo_data_record
         print("Empty data set!")
         return
 
-    collection = app.database["cities"]
+    collection = app.database[COLLECTION_NAME_CITIES]
     city_record = collection.find_one({"name": city})
     longitude = longitude_to_360(city_record["coordinates"][0])
     latitude = city_record["coordinates"][1]
@@ -162,10 +151,10 @@ def saveToDatabase(record, tt):
     client = pymongo.MongoClient("mongodb://admin:adminpassword@localhost:27017")
 
     # Select the database
-    db = client["mydatabase"]
+    db = client[DATABASE_NAME]
 
     # Select the collection
-    collection = db["gefs"]
+    collection = db[COLLECTION_NAME_GEFS]
 
     searchCriteria = { "time": record["time"], "report_date": record["report_date"], "city": record["city"] }
     count = collection.count_documents(searchCriteria)
@@ -186,33 +175,19 @@ def serialize_doc(doc):
     return doc
 
 
-#Example http://localhost:50000/getGefs
-@app.get("/getGefs")
-async def getGefs(report_date: str, city: str):
-
-    # Select database and collection
-    db = app.mongodb_client["mydatabase"]  # Replace with your database name
-    collection = db["gefs"]  # Replace with your collection name
-
-    print("Get data from mongodb ", report_date, " ", city)
-    results = collection.find({"report_date": report_date, "city": city})  # Find all documents with the given report_date and city
-    data_list = [serialize_doc(doc) for doc in results]  # Convert cursor to list with serialized docs
-    return JSONResponse(content=data_list)  # Return as FastAPI JSON response
-
 
 def process_gefs_data(report_date, city, save_to_mongo = True):
-    tt_array = ["00", "06", "12", "18"]
+
     path = '/Users/Zini/Downloads/gefs/gefs_ ' + report_date + '.xlsx'
     workbook = xlsxwriter.Workbook(path)
     worksheet = workbook.add_worksheet()
     worksheet.write('A1', 'TIME')
 
-
-    for tt in tt_array:
+    for tt in CC_FORECAST_CYCLES:
         i = 1
         r = 2 + int(tt)/3
 
-        url = "https://noaa-gefs-pds.s3.amazonaws.com/gefs." + report_date + "/" + tt + "/atmos/pgrb2ap5/"
+        url = NOAA_GEFS_API + report_date + "/" + tt + ATMOS
         filename = "gec00.t" + tt + "z.pgrb2a.0p50.f" + "000"
         url_with_file = url + filename
         try:
@@ -237,6 +212,77 @@ def process_gefs_data(report_date, city, save_to_mongo = True):
 
     workbook.close()
 
+def getCities():
+    collection = app.database[COLLECTION_NAME_CITIES]
+    cities = collection.find().limit(10)
+    data_list = [doc["name"] for doc in cities]  # Convert cursor to list with city names
+    return data_list;
+
+
+def job():
+
+    formatted_date = datetime.now().strftime("%Y%m%d")
+    for city in getCities():
+        process_gefs_data(formatted_date, city)
+        print("Uruchomiona joba ", formatted_date, city)
+
+def run_scheduler():
+    """ Function to continuously run the scheduler in a background thread. """
+    while True:
+        schedule.run_pending()
+        time.sleep(60)  # Check every minute
+
+
+def schedule_jobs():
+    # Run the retry check every 5 minutes
+    schedule.every(1).hours.do(job)
+    # schedule.every().day.at("00:00").do(job)
+    # schedule.every().day.at("06:00").do(job)
+    # schedule.every().day.at("12:00").do(job)
+    # schedule.every().day.at("18:00").do(job)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("App is starting up...")
+    app.mongodb_client = MongoClient("mongodb://admin:adminpassword@localhost:27017")
+    app.database = app.mongodb_client[DATABASE_NAME]
+    print("Connected to the MongoDB database!")
+    schedule_jobs()
+    thread = threading.Thread(target=run_scheduler, daemon=True)
+    thread.start()
+
+    yield
+    print("App is shutting down...")
+
+
+app = FastAPI(lifespan=lifespan)
+
+# Allow all origins (for development)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to your frontend URL in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+#Example http://localhost:50000/getGefs
+@app.get("/getGefs")
+async def getGefs(report_date: str, city: str):
+
+    # Select database and collection
+    db = app.mongodb_client[DATABASE_NAME]  # Replace with your database name
+    collection = db[COLLECTION_NAME_GEFS]  # Replace with your collection name
+
+    print("Get data from mongodb ", report_date, " ", city)
+    results = collection.find({"report_date": report_date, "city": city})  # Find all documents with the given report_date and city
+    data_list = [serialize_doc(doc) for doc in results]  # Convert cursor to list with serialized docs
+    return JSONResponse(content=data_list)  # Return as FastAPI JSON response
+
+
+
 
 #Example http://localhost:50000/process
 @app.get("/process")
@@ -249,11 +295,8 @@ async def process(report_date: str, city: str):
 
 #Example http://localhost:50000/cities
 @app.get("/cities")
-async def getCities():
-
-    collection = app.database["cities"]
-    cities = collection.find()
-    data_list = [doc["name"] for doc in cities]  # Convert cursor to list with city names
+async def getCitiesAPI():
+    data_list = getCities()
 
     return JSONResponse(content=data_list)  # Return as FastAPI JSON response
 
